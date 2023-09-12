@@ -1,25 +1,24 @@
-import logo from './logo.svg';
+import React from 'react';
 import './App.css';
+import DragAndDrop from './components/DragAndDrop';
+import backgroundImg from "./1713248.jpg";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const appStyle = {
+        backgroundImage: `url(${backgroundImg})`, // Use the imported image
+        backgroundSize: 'cover', // Adjust as needed
+        backgroundPosition: 'center', // Adjust as needed
+        // Other styles for your component
+    };
+
+    return (
+        <div className="App" style={appStyle}>
+            <DragAndDrop />
+        </div>
+    );
 }
 
 export default App;
+
+
+
