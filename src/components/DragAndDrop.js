@@ -40,21 +40,24 @@ const DragAndDrop = () => {
         reader.readAsDataURL(file);
     }, []);
 
-    const sendFileToBackend = async () => {
+
+
+    const sendFileToServer = async () => {
         if (selectedFile) {
-            //Send the selected file to the backend via API
             const formData = new FormData();
             formData.append('file', selectedFile);
+
             try {
-                await axios.post('http://localhost:8989/upload', formData);
+                await axios.post('http://localhost:8989/upload', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
             } catch (error) {
-                console.error('Error uploading file:', error);
+                console.error('Error sending file to server:', error);
             }
         }
     };
-
-
-
 
     const handleDownloadClick = () => {
         if (selectedFile) {
@@ -78,6 +81,23 @@ const DragAndDrop = () => {
             document.body.removeChild(a);
         }
     };
+
+    const sendRequest = async () => {
+        try {
+            await axios.get('http://localhost:8989/count');
+        } catch (error) {
+            console.error('Error sending request:', error);
+        }
+    };
+
+    const fileName = async () => {
+        try {
+            await axios.post('http://localhost:8989/display', { message: selectedFile.name });
+        } catch (error) {
+            console.error('Error sending Amiel to server:', error);
+        }
+    };
+
 
     const handleOpenFileClick = () => {
         if (selectedFile) {
@@ -214,8 +234,11 @@ const DragAndDrop = () => {
                 )}
             </div>
             <div className="buttons">
-                <button onClick={sendFileToBackend} disabled={!selectedFile} style={buttonStyle}>
-                    Send
+                <button onClick={sendFileToServer} disabled={!selectedFile} style={buttonStyle}>
+                    Send file
+                </button>
+                <button onClick={sendRequest} disabled={!selectedFile} style={buttonStyle}>
+                    Send request
                 </button>
                 <button onClick={handleDownloadClick} disabled={!selectedFile} style={buttonStyle}>
                     Download

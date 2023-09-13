@@ -1,0 +1,23 @@
+private int requestCount = 0;
+
+    @GetMapping("/count")
+    public String getRequestCount() {
+        requestCount++;
+        return "Request count: " + requestCount;
+    }
+}
+
+
+package com.dev.test_mentor;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class TestMentorApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
