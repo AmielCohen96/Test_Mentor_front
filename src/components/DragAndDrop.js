@@ -13,6 +13,57 @@ const DragAndDrop = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [selectedFileType, setSelectedFileType] = useState(null);
 
+
+    const handleFileInputChange = (event) => {
+        const file = event.target.files[0];
+        setSelectedFile(file);
+    };
+
+    const uploadFileToServer = async () => {
+        try {
+            if (!selectedFile) {
+                console.error('No file selected.');
+                return;
+            }
+
+            // Create a FormData object to send the file
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            // Send the file to the server using a POST request
+            const response = await axios.post('http://localhost:8989/upload', formData);
+
+            console.log('Server response:', response.data);
+        } catch (error) {
+            console.error('Error uploading file to server:', error);
+        }
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     const onDrop = useCallback(async (acceptedFiles) => {
         const file = acceptedFiles[0]; // Only accept the first dropped file
 
@@ -80,6 +131,7 @@ const DragAndDrop = () => {
         }
     };
 
+
     const sendRequest = async () => {
         try {
             await axios.get('http://localhost:8989/count');
@@ -88,13 +140,14 @@ const DragAndDrop = () => {
         }
     };
 
-    const fileName = async () => {
-        try {
-            await axios.post('http://localhost:8989/display', { message: selectedFile.name });
-        } catch (error) {
-            console.error('Error sending Amiel to server:', error);
-        }
-    };
+    // const fileName = async () => {
+    //     try {
+    //         await axios.post('http://localhost:8989/display', { message: selectedFile.name });
+    //     } catch (error) {
+    //         console.error('Error sending Amiel to server:', error);
+    //     }
+    // };
+
 
     const handleUpload = async () => {
         if (selectedFile) {
@@ -224,6 +277,21 @@ const DragAndDrop = () => {
     };
 
 
+        const checkConnection = async () => {
+            try {
+                const response = await axios.get('http://localhost:8989/test3');
+                console.log('Response from server:', response.data);
+                // Handle the response as needed
+            } catch (error) {
+                console.error('Error connecting to server:', error);
+                // Handle errors
+            }
+        };
+
+
+
+
+
 
     const { getRootProps, getInputProps } = useDropzone({
         onDrop,
@@ -265,9 +333,18 @@ const DragAndDrop = () => {
                 <button onClick={clearFile} style={buttonStyle}>
                     Clear
                 </button>
+
+                <div>
+                    <input type="file" onChange={handleFileInputChange} />
+                    <button onClick={uploadFileToServer}>Upload File</button>
+                </div>
+
+
+
             </div>
         </div>
     );
 };
 
 export default DragAndDrop;
+
