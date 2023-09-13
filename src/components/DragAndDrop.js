@@ -40,8 +40,6 @@ const DragAndDrop = () => {
         reader.readAsDataURL(file);
     }, []);
 
-
-
     const sendFileToServer = async () => {
         if (selectedFile) {
             const formData = new FormData();
@@ -98,6 +96,24 @@ const DragAndDrop = () => {
         }
     };
 
+    const handleUpload = async () => {
+        if (selectedFile) {
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            try {
+                await fetch('http://localhost:8989/upload', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+                console.log('File sent successfully');
+            } catch (error) {
+                console.error('Error uploading file:', error);
+            }
+        }
+    };
 
     const handleOpenFileClick = () => {
         if (selectedFile) {
@@ -234,7 +250,7 @@ const DragAndDrop = () => {
                 )}
             </div>
             <div className="buttons">
-                <button onClick={sendFileToServer} disabled={!selectedFile} style={buttonStyle}>
+                <button onClick={handleUpload} disabled={!selectedFile} style={buttonStyle}>
                     Send file
                 </button>
                 <button onClick={sendRequest} disabled={!selectedFile} style={buttonStyle}>
