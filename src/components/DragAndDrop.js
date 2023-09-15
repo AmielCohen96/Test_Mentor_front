@@ -1,7 +1,6 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import './DragAndDrop.css'
-
 import axios from 'axios';
 import logo from '../BlackTestLogo.png';
 import pdfIcon from '../pdfIcon.png';
@@ -12,12 +11,52 @@ const DragAndDrop = () => {
     const [uploadedFiles, setUploadedFiles] = useState([]);
     const [selectedFile, setSelectedFile] = useState(null);
     const [selectedFileType, setSelectedFileType] = useState(null);
+    const [base64Data, setBase64Data] = useState(null);
 
+    const handleFileDrop = useCallback((acceptedFiles) => {
+        const file = acceptedFiles[0];
+        if (file) {
+            setSelectedFile(file);
+
+            // Read the selected file as base64
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const result = event.target.result;
+                setBase64Data(result);
+            };
+            reader.readAsDataURL(file);
+        }
+    }, []);
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+    };
 
     const handleFileInputChange = (event) => {
         const file = event.target.files[0];
         setSelectedFile(file);
+
+        // Read the selected file as base64
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const result = event.target.result;
+            setBase64Data(result);
+        };
+        reader.readAsDataURL(file);
     };
+
+    const handleFileInputClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const fileInputRef = React.createRef();
+
+    const { getRootProps, getInputProps } = useDropzone({
+        onDrop: handleFileDrop,
+        accept: ['.pdf', 'image/png'], // Only accept PDF and PNG files
+    });
 
     const uploadFileToServer = async () => {
         try {
@@ -36,75 +75,6 @@ const DragAndDrop = () => {
             console.log('Server response:', response.data);
         } catch (error) {
             console.error('Error uploading file to server:', error);
-        }
-    };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    const onDrop = useCallback(async (acceptedFiles) => {
-        const file = acceptedFiles[0]; // Only accept the first dropped file
-
-        if (!file) {
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = async () => {
-            const base64Data = reader.result.split(',')[1];
-            setSelectedFile({
-                name: file.name,
-                type: file.type,
-                data: base64Data,
-            });
-            if (file.type.startsWith('image/')) {
-                setSelectedFileType('image');
-            } else if (file.type === 'application/pdf') {
-                setSelectedFileType('pdf');
-            } else {
-                setSelectedFileType(null);
-            }
-        };
-
-        reader.readAsDataURL(file);
-    }, []);
-
-    const sendFileToServer = async () => {
-        if (selectedFile) {
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-
-            try {
-                await axios.post('http://localhost:8989/upload', formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                });
-            } catch (error) {
-                console.error('Error sending file to server:', error);
-            }
         }
     };
 
@@ -137,34 +107,6 @@ const DragAndDrop = () => {
             await axios.get('http://localhost:8989/count');
         } catch (error) {
             console.error('Error sending request:', error);
-        }
-    };
-
-    // const fileName = async () => {
-    //     try {
-    //         await axios.post('http://localhost:8989/display', { message: selectedFile.name });
-    //     } catch (error) {
-    //         console.error('Error sending Amiel to server:', error);
-    //     }
-    // };
-
-
-    const handleUpload = async () => {
-        if (selectedFile) {
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-            try {
-                await fetch('http://localhost:8989/upload', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                });
-                console.log('File sent successfully');
-            } catch (error) {
-                console.error('Error uploading file:', error);
-            }
         }
     };
 
@@ -277,26 +219,6 @@ const DragAndDrop = () => {
     };
 
 
-        const checkConnection = async () => {
-            try {
-                const response = await axios.get('http://localhost:8989/test3');
-                console.log('Response from server:', response.data);
-                // Handle the response as needed
-            } catch (error) {
-                console.error('Error connecting to server:', error);
-                // Handle errors
-            }
-        };
-
-
-
-
-
-
-    const { getRootProps, getInputProps } = useDropzone({
-        onDrop,
-        accept: ['.jpg', '.jpeg', '.pdf', '.html'],
-    });
 
     return (
         <div className="container">
@@ -304,8 +226,14 @@ const DragAndDrop = () => {
                 <img src={logo} alt="Website Logo" style={logoStyle}/>
             </div>
             <div style={UploadStyle}><h1>Upload your test</h1></div>
-            <div {...getRootProps()} className={`dropzone${selectedFile ? ' active' : ''}`} style={dropzoneStyle}>
-                <input {...getInputProps()} />
+            <div
+                {...getRootProps()}
+                className={`dropzone${selectedFile ? ' active' : ''}`}
+                style={dropzoneStyle}
+            >
+                <input
+                    {...getInputProps()} // Use getInputProps to pass Dropzone's input props
+                />
                 {selectedFile ? (
                     <h3><p style={iconStyle}>{selectedFileType === 'image' ? (
                         <img src={imageIcon} alt="Image Icon" style={iconStyle} />
@@ -318,7 +246,7 @@ const DragAndDrop = () => {
                 )}
             </div>
             <div className="buttons">
-                <button onClick={handleUpload} disabled={!selectedFile} style={buttonStyle}>
+                <button onClick={uploadFileToServer} disabled={!selectedFile} style={buttonStyle}>
                     Send file
                 </button>
                 <button onClick={sendRequest} disabled={!selectedFile} style={buttonStyle}>
@@ -333,14 +261,6 @@ const DragAndDrop = () => {
                 <button onClick={clearFile} style={buttonStyle}>
                     Clear
                 </button>
-
-                <div>
-                    <input type="file" onChange={handleFileInputChange} />
-                    <button onClick={uploadFileToServer}>Upload File</button>
-                </div>
-
-
-
             </div>
         </div>
     );
