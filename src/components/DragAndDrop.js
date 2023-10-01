@@ -1,5 +1,5 @@
-import React, { useCallback, useState, useRef } from 'react';
-import { useDropzone } from 'react-dropzone';
+import React, {useCallback, useState, useRef} from 'react';
+import {useDropzone} from 'react-dropzone';
 import './DragAndDrop.css'
 import axios from 'axios';
 import logo from '../BlackTestLogo.png';
@@ -53,7 +53,7 @@ const DragAndDrop = () => {
 
     const fileInputRef = React.createRef();
 
-    const { getRootProps, getInputProps } = useDropzone({
+    const {getRootProps, getInputProps} = useDropzone({
         onDrop: handleFileDrop,
         accept: ['.pdf', 'image/png'], // Only accept PDF and PNG files
     });
@@ -65,12 +65,12 @@ const DragAndDrop = () => {
                 return;
             }
 
-            // Create a FormData object to send the file
+            // Create a FormData object to send the file with the key 'image'
             const formData = new FormData();
-            formData.append('file', selectedFile);
+            formData.append('image', selectedFile); // Use 'image' as the key
 
             // Send the file to the server using a POST request
-            const response = await axios.post('http://localhost:8989/upload', formData);
+            const response = await axios.post('http://localhost:8080/upload_image', formData);
 
             console.log('Server response:', response.data);
         } catch (error) {
@@ -78,12 +78,13 @@ const DragAndDrop = () => {
         }
     };
 
+
     const handleDownloadClick = () => {
         if (selectedFile) {
-            const { type, data } = selectedFile;
+            const {type, data} = selectedFile;
 
             const byteArray = new Uint8Array(atob(data).split('').map(char => char.charCodeAt(0)));
-            const blob = new Blob([byteArray], { type });
+            const blob = new Blob([byteArray], {type});
 
             const url = URL.createObjectURL(blob);
 
@@ -102,21 +103,13 @@ const DragAndDrop = () => {
     };
 
 
-    const sendRequest = async () => {
-        try {
-            await axios.get('http://localhost:8989/count');
-        } catch (error) {
-            console.error('Error sending request:', error);
-        }
-    };
-
     const handleOpenFileClick = () => {
         if (selectedFile) {
-            const { type, data } = selectedFile;
+            const {type, data} = selectedFile;
 
             if (type.startsWith('image/')) {
                 // For images, create a Blob URL
-                const blob = new Blob([new Uint8Array(atob(data).split('').map(char => char.charCodeAt(0)))], { type });
+                const blob = new Blob([new Uint8Array(atob(data).split('').map(char => char.charCodeAt(0)))], {type});
                 const blobURL = URL.createObjectURL(blob);
 
                 // Open the Blob URL in a new window/tab
@@ -126,7 +119,7 @@ const DragAndDrop = () => {
                 }
             } else if (type === 'application/pdf' || type === 'text/html') {
                 // For PDFs or HTML files, create a Blob URL
-                const blob = new Blob([new Uint8Array(atob(data).split('').map(char => char.charCodeAt(0)))], { type });
+                const blob = new Blob([new Uint8Array(atob(data).split('').map(char => char.charCodeAt(0)))], {type});
                 const blobURL = URL.createObjectURL(blob);
 
                 // Open the Blob URL in a new window/tab
@@ -219,7 +212,6 @@ const DragAndDrop = () => {
     };
 
 
-
     return (
         <div className="container">
             <div style={logoContainerStyle}>
@@ -235,23 +227,25 @@ const DragAndDrop = () => {
                     {...getInputProps()} // Use getInputProps to pass Dropzone's input props
                 />
                 {selectedFile ? (
-                    <h3><p style={iconStyle}>{selectedFileType === 'image' ? (
-                        <img src={imageIcon} alt="Image Icon" style={iconStyle} />
-                    ) :
-                        <img src={pdfIcon} alt="PDF Icon" style={pdfIconStyle} />
-                    }
-                        <p style={NameStyle}>{selectedFile.name}</p></p></h3>
+                    <h3>
+                        <p style={iconStyle}>{selectedFileType === 'image' ? (
+                                <img src={imageIcon} alt="Image Icon" style={iconStyle}/>
+                            ) :
+                            <img src={pdfIcon} alt="PDF Icon" style={pdfIconStyle}/>
+                        }
+                            <p style={NameStyle}>{selectedFile.name}</p></p>
+                    </h3>
                 ) : (
                     <h3><p>Drag &amp; drop JPG, JPEG, PDF, or HTML files here, or click to select files</p></h3>
                 )}
+
+
             </div>
             <div className="buttons">
                 <button onClick={uploadFileToServer} disabled={!selectedFile} style={buttonStyle}>
                     Send file
                 </button>
-                <button onClick={sendRequest} disabled={!selectedFile} style={buttonStyle}>
-                    Send request
-                </button>
+
                 <button onClick={handleDownloadClick} disabled={!selectedFile} style={buttonStyle}>
                     Download
                 </button>
@@ -267,4 +261,7 @@ const DragAndDrop = () => {
 };
 
 export default DragAndDrop;
+
+
+
 
